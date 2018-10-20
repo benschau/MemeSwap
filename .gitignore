@@ -104,3 +104,10 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Google service cloud credentials
+meme_swap_owner_account_key.json
+
+# emacs
+*~
+*#
