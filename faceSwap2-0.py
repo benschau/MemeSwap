@@ -223,7 +223,7 @@ def swap_faces(im1, im2, features1, features2, location):
     warped_mask = warp_im(mask, m, im1.shape)
     combined_mask = numpy.max([get_face_mask(im1, landmarks1), warped_mask],
                               axis=0)
-    # warp and corredt im2 to mask onto im1
+    # warp and correct im2 to mask onto im1
     warped_im2 = warp_im(im2, m, im1.shape)
     warped_corrected_im2 = correct_colours(im1, warped_im2, left_eye1, right_eye1)
     # mask im2 onto im1
