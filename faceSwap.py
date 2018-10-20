@@ -49,7 +49,8 @@ import numpy
 
 import sys
 
-PREDICTOR_PATH = "/home/matt/dlib-18.16/shape_predictor_68_face_landmarks.dat"
+#PREDICTOR_PATH = "/home/matt/dlib-18.16/shape_predictor_68_face_landmarks.dat"
+PREDICTOR_PATH = "./models/shape_predictor_68_face_landmarks.dat"
 SCALE_FACTOR = 1 
 FEATHER_AMOUNT = 11
 
@@ -85,7 +86,7 @@ class TooManyFaces(Exception):
 
 class NoFaces(Exception):
     pass
-
+# replace with landmarks from google
 def get_landmarks(im):
     rects = detector(im, 1)
     
@@ -107,10 +108,12 @@ def annotate_landmarks(im, landmarks):
         cv2.circle(im, pos, 3, color=(0, 255, 255))
     return im
 
+# blacks out outline of face from points
 def draw_convex_hull(im, points, color):
     points = cv2.convexHull(points)
     cv2.fillConvexPoly(im, points, color=color)
 
+# copies over facial features, not whole face
 def get_face_mask(im, landmarks):
     im = numpy.zeros(im.shape[:2], dtype=numpy.float64)
 
@@ -215,5 +218,5 @@ warped_corrected_im2 = correct_colours(im1, warped_im2, landmarks1)
 
 output_im = im1 * (1.0 - combined_mask) + warped_corrected_im2 * combined_mask
 
-cv2.imwrite('output.jpg', output_im)
+cv2.imwrite('output.jpg ', output_im)
 print("Done")
