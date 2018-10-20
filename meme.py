@@ -16,7 +16,7 @@ import requests, urlparse
 import bs4 as soup
 from PIL import Image
 
-img_folder = "imgs/"
+img_folder = "images/"
 valid_img = ["png", "bmp", "jpg", "jpeg"]
 
 class MemeGenerator:
