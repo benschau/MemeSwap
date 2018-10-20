@@ -52,7 +52,7 @@ import sys
 #PREDICTOR_PATH = "/home/matt/dlib-18.16/shape_predictor_68_face_landmarks.dat"
 PREDICTOR_PATH = "./models/shape_predictor_68_face_landmarks.dat"
 SCALE_FACTOR = 1 
-FEATHER_AMOUNT = 11
+FEATHER_AMOUNT = 27
 
 FACE_POINTS = list(range(17, 68))
 MOUTH_POINTS = list(range(48, 61))
@@ -77,7 +77,7 @@ OVERLAY_POINTS = [
 
 # Amount of blur to use during colour correction, as a fraction of the
 # pupillary distance.
-COLOUR_CORRECT_BLUR_FRAC = 0.6
+COLOUR_CORRECT_BLUR_FRAC = 0.8
 
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(PREDICTOR_PATH)
