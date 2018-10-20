@@ -9,8 +9,12 @@ Todo:
 
 """
 
+import os, sys
+
 import praw
-import requests
+import requests, urlparse
+import bs4 as soup
+from PIL import Image
 
 class MemeGenerator:
     def __init__(self, reddit, subreddit, limit=25):
@@ -91,10 +95,45 @@ def get_secrets(cert_path):
 
     return reddit
 
+def download_img(url, tgt=None, albums=False):
+    """
+    Download the image(s) at the URL.
+
+    Args:
+        url (str): a URL, formatted https://*.*/*.jpg
+        tgt (str): a filename to save to. If None, we use the basename of url
+        albums (bool): a boolean indicating whether to download an entire album at
+                       the url (currently not functioning as intended)
+
+    Returns:
+        A handle to the downloaded image; None if there is no image.
+    """
+    url = urlparse.urlparse(url)
+    if not bool(url.scheme):
+        raise ValueError("url is invalid")
+
+    if not tgt:
+        tgt = os.path.basename(url.path)
+
+    urllib.urlretrieve(url, tgt)
+
+    try:
+        img = Image.open(tgt)
+    except IOError:
+        print("couldn't get handle to {}".format(tgt))
+        return None
+
+    return img
+
 if __name__ == "__main__":
     # test case:
     reddit = get_secrets('cert.txt')
     gen = MemeGenerator(reddit, 'dankmemes')
-    meme = gen.get_meme()
 
+    meme = gen.get_meme()
     print(meme)
+
+    meme = gen.get_meme()
+    print(meme)
+    download_img(meme)
+
