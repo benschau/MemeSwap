@@ -108,6 +108,9 @@ venv.bak/
 # Google service cloud credentials
 meme_swap_owner_account_key.json
 
+# Reddit API auth
+cert.txt
+
 # emacs
 *~
 *#
