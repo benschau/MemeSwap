@@ -16,6 +16,8 @@ import requests, urlparse
 import bs4 as soup
 from PIL import Image
 
+valid_img = ["png", "bmp", "jpg", "jpeg"]
+
 class MemeGenerator:
     def __init__(self, reddit, subreddit, limit=25):
         """
@@ -115,6 +117,10 @@ def download_img(url, tgt=None, albums=False):
     if not tgt:
         tgt = os.path.basename(url.path)
 
+    # validate image extension:
+    if tgt[tgt.rfind(".") + 1:] not in valid_img:
+        return None
+
     urllib.urlretrieve(url, tgt)
 
     try:
@@ -135,5 +141,5 @@ if __name__ == "__main__":
 
     meme = gen.get_meme()
     print(meme)
-    download_img(meme)
+    img = download_img(meme)
 
