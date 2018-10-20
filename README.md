@@ -1,2 +1,2 @@
 # MemeSwap
-Tool to swap faces in memes. 
+Tool to swap faces onto memes. 
