@@ -7,6 +7,7 @@ import os
 from google.cloud import vision
 from google.cloud.vision import types
 
+import base64
 
 class VisionDetector:
     def __init__(self):
@@ -25,19 +26,74 @@ class VisionDetector:
         # The name of the image file to annotate
         file_name = os.path.join(
             os.path.dirname(__file__), image)
-
-        # Loads the image into memory
+        
         with io.open(file_name, 'rb') as image_file:
             content = image_file.read()
 
         image = types.Image(content=content)
 
         # Performs landmark detection on the image file (eyes, etc.)
-        response = self.client.face_detection(image=image)
-        face = response.face_annotations
+        response = self.client.face_detection(image)
+        if response:
+            face = response.face_annotations
+            if face:
+                # print("face annotations:", face)
+                return face[0]
+            else:
+                return None
+        else:
+            return None
 
-        return face[0]
+    # def read_images(self, img_paths):
+    #     '''
+    #     Send an image to Vision API and find facial features
 
+    #     Input:
+    #         image: list of tuple of directory/file_name of (local, foreign)
+    #     Output:
+    #         returns list of FaceAnnotation objects
+    #     '''
+    #     requests = []
+    #     for img_path_pair in img_paths:
+    #         # make dictionary matching AnnotateImageRequest JSON type
+    #         # return the FACE_DETECTION type features on that image
+    #         # full list of types here:
+    #         # https://cloud.google.com/vision/docs/reference/rest/v1/Feature#Type
+
+    #         # read unaltered bytes of image into content
+    #         with open(img_path_pair[0], "rb") as imageFile:
+    #             imgString = base64.b64encode(imageFile.read())
+
+    #         print(str(img_path_pair[1]))
+    #         annotate_image_request_dict = {
+    #             'image': {
+    #                 'content': imgString,
+    #                 'source': {
+    #                     'imageUri': img_path_pair[1] # foreign
+    #                 }
+    #             },
+    #             'features': [
+    #                 {
+    #                     'type': 'FACE_DETECTION'
+    #                 }
+    #             ]
+    #         }
+
+    #         print(type(annotate_image_request_dict['image']['source']['imageUr']))
+    #         # add dictionary request to list of requests
+    #         requests.append(annotate_image_request_dict)
+
+    #     batch_response = self.client.batch_annotate_images(requests)
+    #     faces = []
+    #     for response in batch_response.responses:
+    #         # for each image annotation response, get FaceAnnotation object
+    #         print(response)
+    #         if not response.error:
+    #             face = response.face_annotations[0]
+    #             faces.append(face)
+
+    #     return faces
+        
     def clean_face_features(self, face):
         '''
         Given a set of facial features, return relevant data points
@@ -56,18 +112,27 @@ class VisionDetector:
 
         corners = ['LOWER_LEFT', 'LOWER_RIGHT', 'UPPER_RIGHT', 'UPPER_LEFT']
         
-        # outer square 
-        outer_bound = face.bounding_poly     # entire face
-        outer_bound_dict = {}
-        for corner, vertex in zip(corners, outer_bound.vertices):
-            outer_bound_dict[corner] = (vertex.x, vertex.y)
+        # outer square
+        try:
+            outer_bound = face.bounding_poly     # entire face
+            outer_bound_dict = {}
+            for corner, vertex in zip(corners, outer_bound.vertices):
+                outer_bound_dict[corner] = (vertex.x, vertex.y)
+        except AttributeError:
+            outer_bound_dict = None
             
         # inner square
-        inner_bound = face.fd_bounding_poly  # only skin part
-        inner_bound_dict = {}
-        for corner, vertex in zip(corners, inner_bound.vertices):
-            inner_bound_dict[corner] = (vertex.x, vertex.y)
+        try:
+            inner_bound = face.fd_bounding_poly  # only skin part
+            inner_bound_dict = {}
+            for corner, vertex in zip(corners, inner_bound.vertices):
+                inner_bound_dict[corner] = (vertex.x, vertex.y)
+        except AttributeError:
+            inner_bound_dict = None
 
+        if outer_bound_dict == None and inner_bound_dict == None:
+            return None
+        
         # map int (constant type) to readable string
         type_int_to_string_dict = {
             0: 'UNKNOWN_LANDMARK',
@@ -122,7 +187,3 @@ class VisionDetector:
                 'inner_bound_dict': inner_bound_dict,
                 'facial_features_dict': landmarks_dict}
         
-vision = VisionDetector() 
-face = vision.read_image('images/meme5.jpg')
-clean_face = vision.clean_face_features(face)
-print(clean_face)
