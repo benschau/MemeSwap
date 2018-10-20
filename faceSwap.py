@@ -209,6 +209,8 @@ def correct_colours(im1, im2, landmarks1):
                                                 im2_blur.astype(numpy.float64))
 
 # get landmarks (replaced by google api)
+print("arg1: %s" % sys.argv[1])
+print("arg2: %s" % sys.argv[2])
 im1, landmarks1 = read_im_and_landmarks(sys.argv[1])
 im2, landmarks2 = read_im_and_landmarks(sys.argv[2])
 

@@ -12,7 +12,7 @@ Todo:
 import os, sys
 
 import praw
-import requests, urlparse
+import requests, urlparse, urllib
 import bs4 as soup
 from PIL import Image
 
@@ -53,6 +53,7 @@ class MemeGenerator:
 
         hot = []
         if len(self.hot_entries) < num:
+            hot = self.hot_entries
             self.hot_entries = []
             return self.hot_entries
 
@@ -132,7 +133,6 @@ def download_img(url, tgt=None):
         return None
 
     urllib.urlretrieve(url, tgt)
-
     # try:
     #     img = Image.open(tgt)
     # except IOError:

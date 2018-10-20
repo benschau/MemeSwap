@@ -191,7 +191,7 @@ def find_eyes(landmarks):
     return left_eye, right_eye
 
 
-def swap_faces(im1, im2, features1, features2, location):
+def swap_faces(im1, im2, features1, features2, location="photos/output.jpg"):
     """
     Method to write out an image putting the face in im2 over the face in im1.
     Writes out to file at location (must be jpg probably)
@@ -230,4 +230,4 @@ def swap_faces(im1, im2, features1, features2, location):
     output_im = im1 * (1.0 - combined_mask) + warped_corrected_im2 * combined_mask
     print("Writing to: %s" % location)
     cv2.imwrite(location, output_im)
-    return location
+    return output_im
