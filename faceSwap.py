@@ -70,9 +70,10 @@ ALIGN_POINTS = (LEFT_BROW_POINTS + RIGHT_EYE_POINTS + LEFT_EYE_POINTS +
 # Points from the second image to overlay on the first. The convex hull of each
 # element will be overlaid.
 OVERLAY_POINTS = [
-    LEFT_EYE_POINTS + RIGHT_EYE_POINTS + LEFT_BROW_POINTS + RIGHT_BROW_POINTS,
+    LEFT_EYE_POINTS + RIGHT_EYE_POINTS + LEFT_BROW_POINTS + RIGHT_BROW_POINTS +
     NOSE_POINTS + MOUTH_POINTS,
 ]
+# Made into whole face, but can segment by body parts / facial regions
 
 # Amount of blur to use during colour correction, as a fraction of the
 # pupillary distance.
@@ -117,7 +118,10 @@ def draw_convex_hull(im, points, color):
 def get_face_mask(im, landmarks):
     im = numpy.zeros(im.shape[:2], dtype=numpy.float64)
 
+    # whites out mouth and eyes
+    print("------Face mask info-----")
     for group in OVERLAY_POINTS:
+        print("Len:\t%d\nContent:\t%s" % (len(group), group))
         draw_convex_hull(im,
                          landmarks[group],
                          color=1)
@@ -156,6 +160,7 @@ def transformation_from_points(points1, points2):
     points1 /= s1
     points2 /= s2
 
+    # singular value decomposition
     U, S, Vt = numpy.linalg.svd(points1.T * points2)
 
     # The R we seek is in fact the transpose of the one given by U * Vt. This
@@ -168,6 +173,7 @@ def transformation_from_points(points1, points2):
                                        c2.T - (s2 / s1) * R * c1.T)),
                          numpy.matrix([0., 0., 1.])])
 
+# should call google api / load data
 def read_im_and_landmarks(fname):
     im = cv2.imread(fname, cv2.IMREAD_COLOR)
     im = cv2.resize(im, (im.shape[1] * SCALE_FACTOR,
@@ -202,12 +208,16 @@ def correct_colours(im1, im2, landmarks1):
     return (im2.astype(numpy.float64) * im1_blur.astype(numpy.float64) /
                                                 im2_blur.astype(numpy.float64))
 
+# get landmarks (replaced by google api)
 im1, landmarks1 = read_im_and_landmarks(sys.argv[1])
 im2, landmarks2 = read_im_and_landmarks(sys.argv[2])
 
+# inputs are masked from all landmarks (subset used for alignment)
+# stacks math done to images???
 M = transformation_from_points(landmarks1[ALIGN_POINTS],
                                landmarks2[ALIGN_POINTS])
-
+print("-----landmark info-----")
+print("Len:\t%d\nData:\t%s" % (len(landmarks2), str(landmarks2)))
 mask = get_face_mask(im2, landmarks2)
 warped_mask = warp_im(mask, M, im1.shape)
 combined_mask = numpy.max([get_face_mask(im1, landmarks1), warped_mask],
@@ -218,5 +228,8 @@ warped_corrected_im2 = correct_colours(im1, warped_im2, landmarks1)
 
 output_im = im1 * (1.0 - combined_mask) + warped_corrected_im2 * combined_mask
 
-cv2.imwrite('output.jpg ', output_im)
+im_out = str(sys.argv[1]).split('\\')[-1][:-4]
+im_out += "_" + str(sys.argv[2]).split("\\")[-1]
+print("Writing to: %s" % im_out)
+cv2.imwrite(im_out, output_im)
 print("Done")

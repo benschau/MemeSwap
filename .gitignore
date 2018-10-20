@@ -1,6 +1,4 @@
-photos/
-models/
-.idea/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -112,6 +110,15 @@ meme_swap_owner_account_key.json
 
 # Reddit API auth
 cert.txt
+
+# assets for testing
+photos/
+
+# file used for original face swap
+models/
+
+# project files for pycharm
+.idea/
 
 # emacs
 *~
