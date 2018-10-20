@@ -16,6 +16,9 @@ import requests, urlparse
 import bs4 as soup
 from PIL import Image
 
+img_folder = "images/"
+valid_img = ["png", "bmp", "jpg", "jpeg"]
+
 class MemeGenerator:
     def __init__(self, reddit, subreddit, limit=25):
         """
@@ -33,11 +36,14 @@ class MemeGenerator:
         self.subreddit = reddit.subreddit(subreddit)
 
         self.limit = limit
-        self.hot_entries = None
+        self.hot_entries = []
 
-    def get_meme(self):
+    def get_memes(self, num=1):
         """
         Get the next top meme/image from /r/subreddit.
+
+        Args:
+            num (int): number of memes to pop off
 
         Returns:
             str: the next image as a URL from /r/subreddit.
@@ -45,8 +51,15 @@ class MemeGenerator:
         if not self.hot_entries: # NOTE: we populate hot_entries on demand
             self.load_memes()
 
-        hot = self.hot_entries.pop(0)
-        return hot.url
+        hot = []
+        if len(self.hot_entries) < num:
+            self.hot_entries = []
+            return self.hot_entries
+
+        hot = self.hot_entries[:num]
+        self.hot_entries = self.hot_entires[num:]
+
+        return hot
 
     def load_memes(self):
         """
@@ -57,7 +70,6 @@ class MemeGenerator:
         on what images are new; essentially, refresh the hot_entries queue.)
         """
 
-        self.hot_entries = []
         for submission in self.subreddit.hot(limit=self.limit):
             self.hot_entries.append(submission)
 
@@ -95,45 +107,46 @@ def get_secrets(cert_path):
 
     return reddit
 
-def download_img(url, tgt=None, albums=False):
+def download_img(url, tgt=None):
     """
-    Download the image(s) at the URL.
+    Download the image at the URL.
 
     Args:
         url (str): a URL, formatted https://*.*/*.jpg
         tgt (str): a filename to save to. If None, we use the basename of url
-        albums (bool): a boolean indicating whether to download an entire album at
-                       the url (currently not functioning as intended)
 
     Returns:
-        A handle to the downloaded image; None if there is no image.
+        The path to the downloaded image; None if there is no image.
     """
     url = urlparse.urlparse(url)
     if not bool(url.scheme):
         raise ValueError("url is invalid")
 
     if not tgt:
-        tgt = os.path.basename(url.path)
+        tgt = img_folder + os.path.basename(url.path)
+
+    os.makedirs(os.path.dirname(tgt), exist_ok=True)
+
+    # validate image extension:
+    if tgt[tgt.rfind(".") + 1:] not in valid_img:
+        return None
 
     urllib.urlretrieve(url, tgt)
 
-    try:
-        img = Image.open(tgt)
-    except IOError:
-        print("couldn't get handle to {}".format(tgt))
-        return None
+    # try:
+    #     img = Image.open(tgt)
+    # except IOError:
+    #     print("couldn't get handle to {}".format(tgt))
+    #     return None
 
-    return img
+    return tgt
 
 if __name__ == "__main__":
     # test case:
     reddit = get_secrets('cert.txt')
     gen = MemeGenerator(reddit, 'dankmemes')
+    memes = gen.get_memes(1)
 
-    meme = gen.get_meme()
-    print(meme)
-
-    meme = gen.get_meme()
-    print(meme)
-    download_img(meme)
+    for meme in memes:
+        download_img(meme.url)
 
