@@ -103,8 +103,8 @@ def transformation_from_points(points1, points2):
     points2 /= s2
 
     # singular value decomposition\
-    print(points1)
-    print(points2)
+    # print(points1)
+    # print(points2)
     U, S, Vt = numpy.linalg.svd(points1.T * points2)
 
     # The R we seek is in fact the transpose of the one given by U * Vt. This

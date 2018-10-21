@@ -73,14 +73,16 @@ class Pipeline:
         :return: One face-swapped art-transcending work of genius
         """
         # turn image filepaths into np.arrays
-        # print("Test of feature1 values:\n%s\nLen: %d" % (str(features1), len(features1)))
-        # print("Test of feature2 values:\n%s\nLen: %d" % (str(features2), len(features2)))
+        print("Test of feature1 %s\nLen: %s" % (str(features1), len(features1)))
+        print("Test of feature2 values:\n%s\nLen: %d" % (str(features2), len(features2)))
         image1 = cv2.imread(image1, cv2.IMREAD_COLOR)
         image1 = cv2.resize(image1, (image1.shape[1] * 1,
                                  image1.shape[0] * 1))
         image2 = cv2.imread(image2, cv2.IMREAD_COLOR)
         image2 = cv2.resize(image2, (image2.shape[1] * 1,
                                      image2.shape[0] * 1))
+        print("Test of feature1 values:\n%s\nLen: %d" % (str(features1), len(features1)))
+        print("Test of feature2 values:\n%s\nLen: %d" % (str(features2), len(features2)))
         random.seed(69)  # for debugging and the memes
         count = 1
         for feature2 in features2:
@@ -88,6 +90,7 @@ class Pipeline:
             feature1 = random.choice(features1)
             
             # make subimage1
+            print("OUTER BOUND \n%s\n" % str(feature1['outer_bound_dict']))
             if feature1['outer_bound_dict']:  # handle no bound box edge case
                 xT1, yL1 = feature1['outer_bound_dict']['UPPER_LEFT']
                 xB1, yR1 = feature1['outer_bound_dict']['LOWER_RIGHT']
@@ -96,10 +99,11 @@ class Pipeline:
                 xB1, yR1 = feature1['inner_bound_dict']['LOWER_RIGHT']
             else:
                 print("Something went wrong, spicy boi")
-            width1 = yR1 - yL1  # col values
-            height1 = xB1 - xT1  # row values
-            sub_image1 = np.array([np.array([image1[i + xB1][j + yL1] for j in range(width1)]) for i in range(height1)])
-            
+            width1 = abs(yR1 - yL1) # col values
+            height1 = abs(xB1 - xT1)  # row values
+            print("width ", width1, "\nheight ", height1 )
+            sub_image1 = np.array([np.array([image1[i + min(yR1, yL1)][j + min(xB1, xT1)] for j in range(width1)]) for i in range(height1)])
+            print(sub_image1)
             # shift values in dictionaray
             subfeature1 = {}
             for key1 in feature1['facial_features_dict'].keys():
@@ -117,9 +121,10 @@ class Pipeline:
                 xB2, yR2 = feature2['inner_bound_dict']['LOWER_RIGHT']
             else:
                 print("Something went wrong, spicy boi")
-            width2 = yR2 - yL2  # col values
-            height2 = xB2 - xT2  # row values
-            sub_image2 = np.array([np.array([image2[i + xB2][j + yL2] for j in range(width2)]) for i in range(height2)])
+            width2 = abs(yR2 - yL2)  #  row values
+            height2 = abs(xB2 - xT2)  # col values
+            print("width ", width2, "\nheight ", height2)
+            sub_image2 = np.array([np.array([image2[i + min(yR2, yL2)][j + min(xB2, xT2)] for j in range(width2)]) for i in range(height2)])
                 
             # shift values in dictionary
             subfeature2 = {}
@@ -135,7 +140,7 @@ class Pipeline:
             # insert subimage
             for i in range(height1):
                 for j in range(width1):
-                    image2[i + xB2][j + yL2] = sub_swap_img[i][j]
+                    image1[i + min(yR1, yL1)][j + min(xB1, xT1)] = sub_swap_img[i][j]
 
             # write image file to location specified
             cv2.imwrite(location, image1)
@@ -156,9 +161,9 @@ if __name__ == "__main__":
     # print("CLEANED FACE:\n%s\n\n" % str(cleaned_faces))
     # swap individual images
     count = 1
-    for face, img in zip(cleaned_faces, image_urls):
+    for face, meme in zip(cleaned_faces, image_urls):
         print("creating art # %d" % count)
-        pipeline.create_meme(user_image, img, user_faces, face, "art#%d.jpg" % count)
+        pipeline.create_meme(meme, user_image, face , user_faces, "louvre/art#%d.jpg" % count)
         count += 1
 
         print("Cleaned %d dirty faces" %count)
