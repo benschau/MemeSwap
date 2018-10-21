@@ -12,9 +12,9 @@ Todo:
 import os, sys
 
 import praw
-import requests, urlparse, urllib
-import bs4 as soup
-from PIL import Image
+import requests, urllib.parse as parse, urllib
+import urllib.request as urlrequest
+import cv2
 
 img_folder = "images/"
 valid_img = ["png", "bmp", "jpg", "jpeg"]
@@ -58,7 +58,7 @@ class MemeGenerator:
             return self.hot_entries
 
         hot = self.hot_entries[:num]
-        self.hot_entries = self.hot_entires[num:]
+        self.hot_entries = self.hot_entries[num:]
 
         return hot
 
@@ -119,12 +119,13 @@ def download_img(url, tgt=None):
     Returns:
         The path to the downloaded image; None if there is no image.
     """
-    url = urlparse.urlparse(url)
-    if not bool(url.scheme):
+    parse_url = parse.urlparse(url)
+    if not bool(parse_url.scheme):
+        # check if url is valid
         raise ValueError("url is invalid")
 
     if not tgt:
-        tgt = img_folder + os.path.basename(url.path)
+        tgt = img_folder + os.path.basename(parse_url.path)
 
     os.makedirs(os.path.dirname(tgt), exist_ok=True)
 
@@ -132,20 +133,27 @@ def download_img(url, tgt=None):
     if tgt[tgt.rfind(".") + 1:] not in valid_img:
         return None
 
-    urllib.urlretrieve(url, tgt)
-    # try:
-    #     img = Image.open(tgt)
-    # except IOError:
-    #     print("couldn't get handle to {}".format(tgt))
-    #     return None
+    urlrequest.urlretrieve(url, tgt)
+    if tgt[tgt.rfind('.'):] != '.jpg':
+        return None
+        # TODO:
+        # add PNG support
+        
+        # if file extension is not .jpg, convert to .jpg
+        # img = cv2.imread(tgt)
+        # cv2.imwrite(tgt[:-3] + 'jpg', img)
 
+        # # changing the file name
+        # tgt = tgt.split('.')[0] + '.jpg'
+        # print(tgt)
+        
     return tgt
 
 if __name__ == "__main__":
     # test case:
     reddit = get_secrets('cert.txt')
-    gen = MemeGenerator(reddit, 'dankmemes')
-    memes = gen.get_memes(1)
+    gen = MemeGenerator(reddit, 'dankmemes', 100)
+    memes = gen.get_memes(169)
 
     for meme in memes:
         download_img(meme.url)
