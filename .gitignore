@@ -112,7 +112,6 @@ meme_swap_owner_account_key.json
 cert.txt
 
 # assets for testing
-photos/
 
 # file used for original face swap
 models/
