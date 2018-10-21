@@ -121,7 +121,6 @@ def get_face_mask(im, landmarks):
     # whites out mouth and eyes
     print("------Face mask info-----")
     for group in OVERLAY_POINTS:
-        print("Len:\t%d\nContent:\t%s" % (len(group), group))
         draw_convex_hull(im,
                          landmarks[group],
                          color=1)

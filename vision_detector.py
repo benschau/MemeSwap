@@ -30,9 +30,7 @@ class VisionDetector:
         with io.open(file_name, 'rb') as image_file:
             content = image_file.read()
 
-        print(content)
         image = types.Image(content=content)
-        print(image)
         # Performs landmark detection on the image file (eyes, etc.)
         response = self.client.face_detection(image)
         if response:

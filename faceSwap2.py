@@ -204,15 +204,15 @@ def swap_faces(im1, im2, features1, features2):
     :param location: The file to write the final image to
     :return: void
     """
-    landmarks1 = features1[2]
-    landmarks2 = features2[2]
+    landmarks1 = features1['facial_features_dict']
+    landmarks2 = features2['facial_features_dict']
     # convert dicts into lists for mask style accessability (important)
     landmarks1, landmarks2 = subset(landmarks1, landmarks2)
     left_eye1, right_eye1 = find_eyes(landmarks1)
-    left_eye1 = left_eye1.values()
-    right_eye1 = right_eye1.values()
-    landmarks1 = landmarks1.values()
-    landmarks2 = landmarks2.values()
+    left_eye1 = list(left_eye1.values())
+    right_eye1 = list(right_eye1.values())
+    landmarks1 = list(landmarks1.values())
+    landmarks2 = list(landmarks2.values())
 
     # calculate points used for aligning image
     # calculate transformation matrix

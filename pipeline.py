@@ -114,7 +114,7 @@ class Pipeline:
             subfeature2 = {}
             for key2 in feature2['facial_features_dict'].keys():
                 orig2 = (feature2['facial_features_dict'])[key2]
-                subfeature2[key2] = np.array(np.array(orig2) - np.array(xT2, yL2))
+                subfeature2[key2] = np.array([orig2]) - np.array([xT2, yL2])
 
             # get swapped subimage
             sub_swap_img = faceSwap2.swap_faces(sub_image1, sub_image2, feature1, feature2)
@@ -135,13 +135,14 @@ if __name__ == "__main__":
     pipeline = Pipeline()
     # user_image = "photos/aaron.jpg"
     user_image = "photos/multiple.jpg"
-    user_faces = pipeline.study_memes([user_image])
-    print("USER FACE:\n")
+    user_faces = pipeline.study_memes([user_image])[0]
+    print("USER FACE:\n%s\n\n" % str(user_faces))
 
     # scrape data
     image_urls = pipeline.get_n_memes(5)
     # process data
     cleaned_faces = pipeline.study_memes(image_urls)
+    print("CLEANED FACE:\n%s\n\n" % str(cleaned_faces))
     # swap individual images
     count = 1
     for face, img in zip(cleaned_faces, image_urls):
