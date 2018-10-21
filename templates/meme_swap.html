@@ -1,21 +1,55 @@
 <html>
     
-    <!-- <script src="webcam.js"></script> -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script src="{{url_for('static', filename='webcam.js')}}"></script>
+    
     <h1> Meme Swap </h1>
     <h2> HackGT 2018 </h2>
 
-    <div id="camera" style="width:320px; height:240px;"></div>
+    <div id="camera"></div>
     <div id="results"></div>
-    
+   
     <script language="JavaScript">
-        Webcam.attach('#camera');
+        function show_cam() {
+            Webcam.set({
+                width: 320,
+                height: 240,
+                image_format: 'jpg',
+                jpeg_quality: 100
+            });
+            Webcam.attach('#camera');
+        }
+
+        window.onload = show_cam;
+
         function take_snapshot() {
             Webcam.snap(function(data_uri) {
-                document.getElementById('results').innerHTML = '<img src="'+data_uri+'"/>';
+                document.getElementById('results').innerHTML = '<img id="image" src="'+data_uri+'"/>';
             });
         }
+
+        function upload() {
+            console.log("uploading...")
+            var img = document.getElementById('image').src;
+            console.log("img: " + img);
+            var form_data = new FormData();
+            form_data.append("file", image);
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/upload");
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    alert(xhr.reseponseText);
+                }
+            }
+
+            xhr.send(form_data);
+        }
     </script>
-    <a href="javascript:void(take_snapshot())">Take shot</a>
+
+    <input type="button" value="Snap" onclick="javascript:void(take_snapshot())">
+    <form method="POST" enctype="multipart/form-data">
+        <input type="button" value="Upload" onclick="javascript:void(upload())">
+    </form>
 
 </html>
