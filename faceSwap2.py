@@ -55,19 +55,19 @@ def get_face_mask(im, landmarks):
     # whites out mouth and eyes
     """for group in range(len([landmarks])):  # just a reminder for how we could segment face swap by features
         draw_convex_hull(im,
-                         landmarks[group],
+                 (int(v[0]), int[v[1]])        landmarks[group],
                          color=1)"""
     draw_convex_hull(im, landmarks, color=1)
     print("Drew hull")
 
     im = numpy.array([im, im, im]).transpose((1, 2, 0))
     print("Drew hull")
+    print("IM LEN: %d\nIM HEIGHT:%d" %(len(im[0]), len(im)))
     im = (cv2.GaussianBlur(im, (FEATHER_AMOUNT, FEATHER_AMOUNT), 0) > 0) * 1.0
     print("Gaussian 1")
 
     im = cv2.GaussianBlur(im, (FEATHER_AMOUNT, FEATHER_AMOUNT), 0)
     print("Gaussian 2")
-
     return im
 
 
@@ -216,10 +216,14 @@ def swap_faces(im1, im2, features1, features2):
     # convert dicts into lists for mask style accessability (important)
     landmarks1, landmarks2 = subset(landmarks1, landmarks2)
     left_eye1, right_eye1 = find_eyes(landmarks1)
-    left_eye1 = numpy.matrix(list(left_eye1.values()))
-    right_eye1 = numpy.matrix(list(right_eye1.values()))
-    landmarks1 = numpy.matrix(list(landmarks1.values()))
-    landmarks2 = numpy.matrix(list(landmarks2.values()))
+    left_eye1 = list(left_eye1.values())
+    left_eye1 = numpy.matrix([int(v) for v in left_eye1])
+    right_eye1 = list(right_eye1.values())
+    right_eye1 = numpy.matrix([int(v) for v in right_eye1])
+    landmarks1 = list(landmarks1.values())
+    landmarks1 = numpy.matrix([(int(v[0]), int(v[1])) for v in landmarks1])
+    landmarks2 = list(landmarks2.values())
+    landmarks2 = numpy.matrix([(int(v[0]), int(v[1])) for v in landmarks2])
     print("Made thousands of arrays :/")
 
     # calculate points used for aligning image

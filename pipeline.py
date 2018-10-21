@@ -150,7 +150,7 @@ if __name__ == "__main__":
     # print("USER FACE:\n%s\n\n" % str(user_faces))
 
     # scrape data
-    image_urls = pipeline.get_n_memes(3)
+    image_urls = pipeline.get_n_memes(10)
     # process data
     cleaned_faces = pipeline.study_memes(image_urls)
     # print("CLEANED FACE:\n%s\n\n" % str(cleaned_faces))
@@ -158,7 +158,7 @@ if __name__ == "__main__":
     count = 1
     for face, img in zip(cleaned_faces, image_urls):
         print("creating art # %d" % count)
-        pipeline.create_meme(user_image, img, user_faces, face, "./louvre/art#%d.jpg" % count)
+        pipeline.create_meme(user_image, img, user_faces, face, "art#%d.jpg" % count)
         count += 1
 
-    print("Cleaned %d dirty faces" %count)
+        print("Cleaned %d dirty faces" %count)
