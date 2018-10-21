@@ -53,15 +53,20 @@ def get_face_mask(im, landmarks):
     im = numpy.zeros(im.shape[:2], dtype=numpy.float64)
 
     # whites out mouth and eyes
-    for group in [landmarks]:  # just a reminder for how we could segment face swap by features
+    """for group in range(len([landmarks])):  # just a reminder for how we could segment face swap by features
         draw_convex_hull(im,
                          landmarks[group],
-                         color=1)
+                         color=1)"""
+    draw_convex_hull(im, landmarks, color=1)
+    print("Drew hull")
 
     im = numpy.array([im, im, im]).transpose((1, 2, 0))
-
+    print("Drew hull")
     im = (cv2.GaussianBlur(im, (FEATHER_AMOUNT, FEATHER_AMOUNT), 0) > 0) * 1.0
+    print("Gaussian 1")
+
     im = cv2.GaussianBlur(im, (FEATHER_AMOUNT, FEATHER_AMOUNT), 0)
+    print("Gaussian 2")
 
     return im
 
@@ -97,7 +102,9 @@ def transformation_from_points(points1, points2):
     points1 /= s1
     points2 /= s2
 
-    # singular value decomposition
+    # singular value decomposition\
+    print(points1)
+    print(points2)
     U, S, Vt = numpy.linalg.svd(points1.T * points2)
 
     # The R we seek is in fact the transpose of the one given by U * Vt. This
@@ -204,23 +211,27 @@ def swap_faces(im1, im2, features1, features2):
     :param location: The file to write the final image to
     :return: void
     """
-    landmarks1 = features1['facial_features_dict']
-    landmarks2 = features2['facial_features_dict']
+    landmarks1 = features1['outer_bound_dict']
+    landmarks2 = features2['outer_bound_dict']
     # convert dicts into lists for mask style accessability (important)
     landmarks1, landmarks2 = subset(landmarks1, landmarks2)
     left_eye1, right_eye1 = find_eyes(landmarks1)
-    left_eye1 = list(left_eye1.values())
-    right_eye1 = list(right_eye1.values())
-    landmarks1 = list(landmarks1.values())
-    landmarks2 = list(landmarks2.values())
+    left_eye1 = numpy.matrix(list(left_eye1.values()))
+    right_eye1 = numpy.matrix(list(right_eye1.values()))
+    landmarks1 = numpy.matrix(list(landmarks1.values()))
+    landmarks2 = numpy.matrix(list(landmarks2.values()))
+    print("Made thousands of arrays :/")
 
     # calculate points used for aligning image
     # calculate transformation matrix
     m = transformation_from_points(landmarks1, landmarks2)
+    print("calced Transform")
     # calculate mask for im2
-    mask = get_face_mask(im2, landmarks2)
+    mask = get_face_mask(im2, landmarks2)  # INFINITY ISSUE
+    print("found mask")
     # transform the mask of im2
     warped_mask = warp_im(mask, m, im1.shape)
+    print("warped mask")
     combined_mask = numpy.max([get_face_mask(im1, landmarks1), warped_mask],
                               axis=0)
     # warp and correct im2 to mask onto im1

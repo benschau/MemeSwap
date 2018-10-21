@@ -32,24 +32,30 @@ class Pipeline:
             local_image_url = meme.download_img(m.url)
             if local_image_url != None:
                 img_paths.append(local_image_url)
-        print("get_n_memes output len %d" %len(img_paths))
+        # print("get_n_memes output len %d" %len(img_paths))
         return img_paths
             
     def study_memes(self, img_paths):
         """
         Method to use google cloud api to analyze faces in images.
         :param img_paths: list of paths to images to study
-        :return: a list of dictionaries containing dictionaries describing the faces
+        :return: a list of lists of dictionaries describing the faces
                   See: vision_detector.clean_face_features() for one entry in that list
         """
         clean_faces = []
         for local_path in img_paths:
             face = self.vision_detector.read_image(local_path)
             # print("TRUE FACE VALUE:\n%s\n\n" % face)
-            if face != None:
+            # print("Type:\t%s" %type(face))
+            try:  # hope to throw an error if object is too complicated
+                isValid = type(None) != type(face) and face != None
+            except TypeError :
+                isValid = True
+
+            if isValid:
                 cleaned_face = self.vision_detector.clean_face_features(face)
 
-                if cleaned_face != None:
+                if not (cleaned_face is None):
                     # add cleaned face dictionary to list
                     clean_faces.append(cleaned_face)
             
@@ -67,20 +73,25 @@ class Pipeline:
         :return: One face-swapped art-transcending work of genius
         """
         # turn image filepaths into np.arrays
+        # print("Test of feature1 values:\n%s\nLen: %d" % (str(features1), len(features1)))
+        # print("Test of feature2 values:\n%s\nLen: %d" % (str(features2), len(features2)))
         image1 = cv2.imread(image1, cv2.IMREAD_COLOR)
+        image1 = cv2.resize(image1, (image1.shape[1] * 1,
+                                 image1.shape[0] * 1))
         image2 = cv2.imread(image2, cv2.IMREAD_COLOR)
+        image2 = cv2.resize(image2, (image2.shape[1] * 1,
+                                     image2.shape[0] * 1))
         random.seed(69)  # for debugging and the memes
         count = 1
         for feature2 in features2:
+            print("swapping face #%d" %count)
             feature1 = random.choice(features1)
             
             # make subimage1
-            print("Test of feature1 values:\n%s\n" % str(feature1))
-            print("Test of feature2 values:\n%s\n" % str(feature2))
             if feature1['outer_bound_dict']:  # handle no bound box edge case
                 xT1, yL1 = feature1['outer_bound_dict']['UPPER_LEFT']
                 xB1, yR1 = feature1['outer_bound_dict']['LOWER_RIGHT']
-            elif feature1['inner_bound_dict']:
+            elif feature1[1]:
                 xT1, yL1 = feature1['inner_bound_dict']['UPPER_LEFT']
                 xB1, yR1 = feature1['inner_bound_dict']['LOWER_RIGHT']
             else:
@@ -96,12 +107,12 @@ class Pipeline:
                 subfeature1[key1] = np.array(orig1) - np.array([xT1, yL1])
                 
             # make subimage2
-            print("Feature 1:\t%s" %str(feature1))
-            print("Feature 2:\t%s" %str(feature2))
+            # print("Feature 1:\t%s" %str(feature1))
+            # print("Feature 2:\t%s" %str(feature2))
             if feature2['outer_bound_dict']:  # handle no bound box edge case
                 xT2, yL2 = feature2['outer_bound_dict']['UPPER_LEFT']
                 xB2, yR2 = feature2['outer_bound_dict']['LOWER_RIGHT']
-            elif feature2['inner_bound_dict']:
+            elif feature2[1]:
                 xT2, yL2 = feature2['inner_bound_dict']['UPPER_LEFT']
                 xB2, yR2 = feature2['inner_bound_dict']['LOWER_RIGHT']
             else:
@@ -133,21 +144,21 @@ class Pipeline:
 if __name__ == "__main__":
     # setup user data
     pipeline = Pipeline()
-    # user_image = "photos/aaron.jpg"
-    user_image = "photos/multiple.jpg"
+    user_image = "photos/aaron.jpg"
+    # user_image = "photos/multiple.jpg"
     user_faces = pipeline.study_memes([user_image])[0]
-    print("USER FACE:\n%s\n\n" % str(user_faces))
+    # print("USER FACE:\n%s\n\n" % str(user_faces))
 
     # scrape data
-    image_urls = pipeline.get_n_memes(5)
+    image_urls = pipeline.get_n_memes(3)
     # process data
     cleaned_faces = pipeline.study_memes(image_urls)
-    print("CLEANED FACE:\n%s\n\n" % str(cleaned_faces))
+    # print("CLEANED FACE:\n%s\n\n" % str(cleaned_faces))
     # swap individual images
     count = 1
     for face, img in zip(cleaned_faces, image_urls):
+        print("creating art # %d" % count)
         pipeline.create_meme(user_image, img, user_faces, face, "./louvre/art#%d.jpg" % count)
-        print("created art # %d" % count)
         count += 1
 
     print("Cleaned %d dirty faces" %count)

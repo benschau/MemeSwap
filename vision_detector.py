@@ -35,7 +35,7 @@ class VisionDetector:
         if response:
             face = response.face_annotations
             if face:
-                print("image: ", image, "face annotations:", face)
+                # print("image: ", image, "face annotations:", face)
                 return face
             else:
                 return None
@@ -191,8 +191,8 @@ class VisionDetector:
 
         return cleaned_faces
 
-vision = VisionDetector()
+"""vision = VisionDetector()
 single_image_annotated = vision.read_image('images/multface.jpg')
 multiple_faces_cleaned = vision.clean_face_features(single_image_annotated)
 #print(single_image_annotated, "\n\n length of single image: ", len(single_image_annotated))
-print(multiple_faces_cleaned, "\n\n number of faces: ", len(multiple_faces_cleaned))
+print(multiple_faces_cleaned, "\n\n number of faces: ", len(multiple_faces_cleaned))"""
