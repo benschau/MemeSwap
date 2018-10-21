@@ -30,8 +30,9 @@ class VisionDetector:
         with io.open(file_name, 'rb') as image_file:
             content = image_file.read()
 
+        print(content)
         image = types.Image(content=content)
-
+        print(image)
         # Performs landmark detection on the image file (eyes, etc.)
         response = self.client.face_detection(image)
         if response:
@@ -113,6 +114,7 @@ class VisionDetector:
         corners = ['LOWER_LEFT', 'LOWER_RIGHT', 'UPPER_RIGHT', 'UPPER_LEFT']
         
         # outer square
+        # print("Original face dictionarry:\n%s\n\n" %face)
         try:
             outer_bound = face.bounding_poly     # entire face
             outer_bound_dict = {}
@@ -182,8 +184,9 @@ class VisionDetector:
             # match (x,y) tuple and insert
             position = (landmark.position.x, landmark.position.y)
             landmarks_dict[landmark_key] = position
-
-        return {'outer_bound_dict': outer_bound_dict,
+        out = {'outer_bound_dict': outer_bound_dict,
                 'inner_bound_dict': inner_bound_dict,
                 'facial_features_dict': landmarks_dict}
-        
+        # print("Single dict returned by image:\n%s\n\n" % out)
+        return [out]
+
